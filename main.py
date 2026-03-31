@@ -2,10 +2,13 @@ import os
 import argparse
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
 
 parser = argparse.ArgumentParser(description="A Gemini API Chatbot")
 parser.add_argument("user_prompt", type=str, help="The prompt for the Chatbot to respond to.")
 args = parser.parse_args()
+
+messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
 
 load_dotenv()
 api_key = os.getenv('GEMINI_API_KEY')
@@ -18,7 +21,7 @@ else:
 client = genai.Client(api_key=api_key)
 response = client.models.generate_content(
     model="gemini-2.5-flash",
-    contents = args.user_prompt
+    contents = messages
 )
 
 if response.usage_metadata:
