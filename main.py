@@ -6,6 +6,7 @@ from google.genai import types
 
 parser = argparse.ArgumentParser(description="A Gemini API Chatbot")
 parser.add_argument("user_prompt", type=str, help="The prompt for the Chatbot to respond to.")
+parser.add_argument("--verbose", action="store_true", help="Enable verbose output for debugging purposes.")
 args = parser.parse_args()
 
 messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
@@ -27,7 +28,12 @@ response = client.models.generate_content(
 if response.usage_metadata:
     prompt_tokens = response.usage_metadata.prompt_token_count
     response_tokens = response.usage_metadata.candidates_token_count
-    print(f"Prompt tokens: {prompt_tokens}\nResponse tokens: {response_tokens}")
+    if args.verbose:
+        print(f"User prompt: {args.user_prompt}")
+        print(f"Prompt tokens: {prompt_tokens}")
+        print(f"Response tokens: {response_tokens}")
+    else:
+        print(f"Prompt tokens: {prompt_tokens}, Response tokens: {response_tokens}")
 else:
     raise RuntimeError("Usage metadata not found in response.")
 
