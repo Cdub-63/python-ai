@@ -32,8 +32,6 @@ if response.usage_metadata:
         print(f"User prompt: {args.user_prompt}")
         print(f"Prompt tokens: {prompt_tokens}")
         print(f"Response tokens: {response_tokens}")
-    else:
-        print(f"Prompt tokens: {prompt_tokens}, Response tokens: {response_tokens}")
 else:
     raise RuntimeError("Usage metadata not found in response.")
 
