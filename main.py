@@ -3,6 +3,9 @@ import argparse
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from prompts import system_prompt
+from config import MODEL
+from call_function import available_functions
 
 parser = argparse.ArgumentParser(description="A Gemini API Chatbot")
 parser.add_argument("user_prompt", type=str, help="The prompt for the Chatbot to respond to.")
@@ -21,8 +24,11 @@ else:
 
 client = genai.Client(api_key=api_key)
 response = client.models.generate_content(
-    model="gemini-2.5-flash",
-    contents = messages
+    model=MODEL,
+    contents = messages,
+    config=types.GenerateContentConfig(
+        tools=[available_functions], system_instruction=system_prompt
+    ),
 )
 
 if response.usage_metadata:
@@ -35,4 +41,8 @@ if response.usage_metadata:
 else:
     raise RuntimeError("Usage metadata not found in response.")
 
-print(response.text)
+if response.function_calls:
+    for function_call in response.function_calls:
+        print(f"Calling function: {function_call.name}({function_call.args})")
+else:
+    print(response.text)
