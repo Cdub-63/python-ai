@@ -5,7 +5,7 @@ from google import genai
 from google.genai import types
 from prompts import system_prompt
 from config import MODEL
-from call_function import available_functions
+from call_function import available_functions, call_function
 
 parser = argparse.ArgumentParser(description="A Gemini API Chatbot")
 parser.add_argument("user_prompt", type=str, help="The prompt for the Chatbot to respond to.")
@@ -41,8 +41,22 @@ if response.usage_metadata:
 else:
     raise RuntimeError("Usage metadata not found in response.")
 
+function_results = []
 if response.function_calls:
     for function_call in response.function_calls:
-        print(f"Calling function: {function_call.name}({function_call.args})")
+        function_call_result = call_function(function_call, verbose=args.verbose)
+        if not function_call_result.parts:
+            raise RuntimeError("Function call result has no parts")
+
+        function_response = function_call_result.parts[0].function_response
+        if function_response is None:
+            raise RuntimeError("Function response is missing from function call result")
+
+        if function_response.response is None:
+            raise RuntimeError("Function response payload is missing")
+
+        function_results.append(function_call_result.parts[0])
+        if args.verbose:
+            print(f"-> {function_response.response}")
 else:
     print(response.text)
